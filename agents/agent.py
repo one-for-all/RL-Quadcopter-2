@@ -34,9 +34,12 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = layers.Dense(units=32, activation='relu')(states)
-        net = layers.Dense(units=64, activation='relu')(net)
+        net = layers.Dense(units=16, activation='relu')(states)
+        net = layers.BatchNormalization()(net)
         net = layers.Dense(units=32, activation='relu')(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Dense(units=16, activation='relu')(net)
+        net = layers.BatchNormalization()(net)
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
@@ -91,18 +94,23 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
-        net_states = layers.Dense(units=32, activation='relu')(states)
-        net_states = layers.Dense(units=64, activation='relu')(net_states)
+        net_states = layers.Dense(units=16, activation='relu')(states)
+        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Dense(units=32, activation='relu')(net_states)
+        net_states = layers.BatchNormalization()(net_states)
 
         # Add hidden layer(s) for action pathway
-        net_actions = layers.Dense(units=32, activation='relu')(actions)
-        net_actions = layers.Dense(units=64, activation='relu')(net_actions)
+        net_actions = layers.Dense(units=16, activation='relu')(actions)
+        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Dense(units=32, activation='relu')(net_actions)
+        net_actions = layers.BatchNormalization()(net_actions)
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Concatenate()([net_states, net_actions])
         net = layers.Dense(units=64, activation='relu')(net)
+        net = layers.BatchNormalization()(net)
 
         # Add more layers to the combined network if needed
 
