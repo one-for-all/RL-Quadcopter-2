@@ -17,21 +17,27 @@ class Task():
         # Simulation
         self.sim = PhysicsSim(init_pose, init_velocities, init_angle_velocities, runtime) 
         self.action_repeat = 1
-        self.states_to_be_used = [self.sim.pose, self.sim.linear_accel, self.sim.angular_v]
+        self._states_to_be_used = ["pose", "linear_accel", "angular_v"]
 
-        self.state_size = self.action_repeat * sum([len(x) for x in self.states_to_be_used])
+        self.state_size = self.action_repeat * sum([len(getattr(self.sim, x)) for x in self._states_to_be_used])
         self.action_low = 0
         self.action_high = 900
         self.action_size = 4
 
         # Goal
-        self.target_pos = target_pos if target_pos is not None else np.array([0., 0., 10.]) 
+        self.target_pos = target_pos if target_pos is not None else np.array([0., 0., 10.])
+        
+    def get_states(self):
+        return [getattr(self.sim, x) for x in self._states_to_be_used]
 
     def get_reward(self):
         """Uses current pose of sim to return reward."""
-        position_score = max(1.-.3*np.linalg.norm(self.sim.pose[:3] - self.target_pos), -1)
-        angular_stationary_score = max(1.-.3*np.linalg.norm(self.sim.angular_v), -1)
-        reward = position_score + .0*angular_stationary_score
+        # position_score = max(10.-.3*np.linalg.norm(self.sim.pose[:3] - self.target_pos), -10)
+        position_score = 10.-.3*np.linalg.norm(self.sim.pose[:3] - self.target_pos)
+        angular_stationary_score = max(10.-.3*np.linalg.norm(self.sim.angular_v), -10)
+        # angular_stationary_score = 10.-.3*np.linalg.norm(self.sim.angular_v)
+        reward = (position_score + .5*angular_stationary_score)/10.0
+        # reward = position_score/10.0
         return reward
 
     def step(self, rotor_speeds):
@@ -41,12 +47,12 @@ class Task():
         for _ in range(self.action_repeat):
             done = self.sim.next_timestep(rotor_speeds) # update the sim pose and velocities
             reward += self.get_reward()
-            pose_all.append(np.concatenate(self.states_to_be_used))
+            pose_all.append(np.concatenate(self.get_states()))
         next_state = np.concatenate(pose_all)
         return next_state, reward, done
 
     def reset(self):
         """Reset the sim to start a new episode."""
         self.sim.reset()
-        state = np.concatenate(self.states_to_be_used * self.action_repeat) 
+        state = np.concatenate(self.get_states() * self.action_repeat) 
         return state

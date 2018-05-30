@@ -34,12 +34,9 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = layers.Dense(units=16, activation='relu')(states)
-        net = layers.BatchNormalization()(net)
-        net = layers.Dense(units=32, activation='relu')(net)
-        net = layers.BatchNormalization()(net)
+        net = layers.Dense(units=32, activation='relu')(states)
         net = layers.Dense(units=16, activation='relu')(net)
-        net = layers.BatchNormalization()(net)
+        net = layers.Dense(units=16, activation='relu')(net)
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
@@ -95,22 +92,18 @@ class Critic:
 
         # Add hidden layer(s) for state pathway
         net_states = layers.Dense(units=16, activation='relu')(states)
-        net_states = layers.BatchNormalization()(net_states)
-        net_states = layers.Dense(units=32, activation='relu')(net_states)
-        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Dense(units=8, activation='relu')(net_states)
 
         # Add hidden layer(s) for action pathway
         net_actions = layers.Dense(units=16, activation='relu')(actions)
-        net_actions = layers.BatchNormalization()(net_actions)
-        net_actions = layers.Dense(units=32, activation='relu')(net_actions)
-        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Dense(units=8, activation='relu')(net_actions)
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Concatenate()([net_states, net_actions])
-        net = layers.Dense(units=64, activation='relu')(net)
-        net = layers.BatchNormalization()(net)
+        net = layers.Dense(units=16, activation='relu')(net)
+        net = layers.Dense(units=16, activation='relu')(net)
 
         # Add more layers to the combined network if needed
 
@@ -192,6 +185,12 @@ class DDPG():
         state = np.reshape(state, [-1, self.state_size])
         action = self.actor_local.model.predict(state)[0]
         return list(action + self.noise.sample())  # add some noise for exploration
+
+    def test_act(self, state):
+        """Returns actions for given state(s) as per current policy."""
+        state = np.reshape(state, [-1, self.state_size])
+        action = self.actor_local.model.predict(state)[0]
+        return action
 
     def learn(self, experiences):
         """Update policy and value parameters using given batch of experience tuples."""

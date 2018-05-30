@@ -43,9 +43,14 @@ class PolicySearch_Agent():
         action = np.dot(state, self.w)  # simple linear policy
         return action
 
+    def test_act(self, state):
+        action = np.dot(state, self.best_w)
+        return action
+
     def learn(self):
         # Learn by random policy search, using a reward-based score
-        self.score = self.total_reward / float(self.count) if self.count else 0.0
+        # self.score = self.total_reward / float(self.count) if self.count else 0.0
+        self.score = self.total_reward
         if self.score > self.best_score:
             self.best_score = self.score
             self.best_w = self.w
