@@ -2,13 +2,13 @@ import numpy as np
 
 
 class Model:
-    def __init__(self, ax, length=1):
+    def __init__(self, ax, length=[1, 1, 1]):
         colors = ['r', 'g', 'b']
         self.ax = ax
         self.lines = sum([ax.plot([], [], [], c=c) for c in colors], [])
         self.pos = np.array([0, 0, 0])
         self.start_points = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        self.end_points = np.array([[length, 0, 0], [0, length, 0], [0, 0, length]])
+        self.end_points = np.array([[length[0], 0, 0], [0, length[1], 0], [0, 0, length[2]]])
         for line, start, end in zip(self.lines, self.start_points,
                                     self.end_points):
             line.set_data((start[0], end[0]), (start[1], end[1]))

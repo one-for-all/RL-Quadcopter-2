@@ -33,12 +33,13 @@ class Trajectory:
     def reset(self):
         self.poses = []
 
-    def plot_trajectory(self, show_orientations=False, every_n=1):
+    def plot_trajectory(self, show_orientations=False, every_n=1, initial_position=[0, 0, 150], end_time=5.2):
         positions = np.array([pose[:3] for pose in self.poses])
         orientations = np.array([pose[3:] for pose in self.poses])
 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
+        ax.set_title("3D trajectory plot")
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
@@ -47,10 +48,15 @@ class Trajectory:
 
         plt.ion()
 
-        n = np.amax(np.abs(positions)) * 1.2
-        ax.set_xlim((-n, n))
-        ax.set_ylim((-n, n))
-        ax.set_zlim((-n, n))
+        x_range = np.amax(np.abs(positions[:, 0]))-np.amin(positions[:, 0])
+        y_range = np.amax(np.abs(positions[:, 1]))-np.amin(positions[:, 1])
+        z_range = np.amax(np.abs(positions[:, 2]))-np.amin(positions[:, 2])
+        n = max([x_range, y_range, z_range]) * 1.2
+        x_initial, y_initial, z_initial = initial_position
+        scale = 1.
+        ax.set_xlim((x_initial-n*scale, x_initial+n*scale))
+        ax.set_ylim((y_initial-n*scale, y_initial+n*scale))
+        ax.set_zlim((z_initial-n*scale, z_initial+n*scale))
         ax.plot(xs=positions[:, 0], ys=positions[:, 1], zs=positions[:, 2],
                 c='k', marker='.', markersize=5)
 
@@ -59,7 +65,7 @@ class Trajectory:
             for i, euler, pos in zip(range(len(orientations)), orientations, positions):
                 if i%every_n == 0 or i == len(orientations)-1: # Set condition for plotting this orientation
                     quaternion = self.euler2quat(euler)
-                    model = Model(ax, length=n/2)
+                    model = Model(ax, length=[n/2]*3)
                     model.set_pos(pos)
                     model.rotate(quaternion)
                     fig.canvas.draw()
@@ -67,6 +73,15 @@ class Trajectory:
                     # fig.canvas.update()
                     fig.canvas.flush_events()
                     # plt.pause(0.001)
+                    
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_title("2D plot")
+        time=np.linspace(0, end_time, len(positions))
+        ax.plot(time, positions[:, 0], label='x')
+        ax.plot(time, positions[:, 1], label='y')
+        ax.plot(time, positions[:, 2], label='z')
+        ax.legend()
 
     def euler2quat(self, euler_angles):
         roll, pitch, yaw = euler_angles
