@@ -36,9 +36,8 @@ class Task():
         position_score = 10.-.3*np.linalg.norm(self.sim.pose[:3] - self.target_pos)**2
         # angular_stationary_score = max(10.-.3*np.linalg.norm(self.sim.angular_v), -10)
         angular_stationary_score = 10.-.3*np.linalg.norm(self.sim.angular_v)**2
-        reward = (position_score + .5*angular_stationary_score)/10.
+        reward = (position_score + .1*angular_stationary_score)/10.
         # reward = np.sqrt(np.abs(reward)) * np.sign(reward)
-        # reward = position_score/10.0
         return reward
 
     def step(self, rotor_speeds):
